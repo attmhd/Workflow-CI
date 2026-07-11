@@ -99,7 +99,6 @@ def main():
             input_example=X_test.head(5)
         )
         
-        # Save model locally for Docker build in CI
         local_model_path = os.path.join(BASE_DIR, "tuned_model_local")
         if os.path.exists(local_model_path):
             import shutil
@@ -131,6 +130,7 @@ def main():
         print(f"Precision: {precision:.4f}")
         print(f"Recall: {recall:.4f}")
         print(f"F1-Score: {f1:.4f}")
+
 
 if __name__ == "__main__":
     main()       
