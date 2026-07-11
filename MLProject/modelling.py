@@ -98,6 +98,18 @@ def main():
             signature=signature,
             input_example=X_test.head(5)
         )
+        
+        # Save model locally for Docker build in CI
+        local_model_path = os.path.join(BASE_DIR, "tuned_model_local")
+        if os.path.exists(local_model_path):
+            import shutil
+            shutil.rmtree(local_model_path)
+        mlflow.sklearn.save_model(
+            sk_model=grid_search.best_estimator_,
+            path=local_model_path,
+            signature=signature,
+            input_example=X_test.head(5)
+        )
         mlflow.log_artifact(DATASET_PATH, artifact_path="data")
 
         y_pred = grid_search.best_estimator_.predict(X_test)

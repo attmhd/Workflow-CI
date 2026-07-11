@@ -30,26 +30,18 @@ jobs:
           . .venv/bin/activate
           uv pip install mlflow==2.19.0 cloudpickle==3.1.2 numpy==2.5.1 pandas==2.3.3 rich==15.0.0 scikit-learn==1.9.0 scipy==1.18.0 imbalanced-learn dagshub matplotlib seaborn
 
-      - name: Run MLflow Project
+      - name: Run modelling script
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_USER_TOKEN }}
         run: |
           . .venv/bin/activate
-          mlflow run MLProject --env-manager local
+          python MLProject/modelling.py
 
-      - name: Get MLflow model from artifacts path
+      - name: Set MLflow model path
         id: get_model
         run: |
-          MODEL_PATH=$(find mlruns -type d -path '*/artifacts/tuned_model' | head -n 1)
-          if [ -z "$MODEL_PATH" ]; then
-            MODEL_PATH=$(find mlruns -type d -name 'tuned_model' | head -n 1)
-          fi
-          if [ -z "$MODEL_PATH" ]; then
-            echo "Model not found. Exiting..."
-            exit 1
-          fi
-          echo "MODEL_PATH=$MODEL_PATH" >> $GITHUB_ENV
-          echo "Model path set to: $MODEL_PATH"
+          echo "MODEL_PATH=MLProject/tuned_model_local" >> $GITHUB_ENV
+          echo "Model path set to: MLProject/tuned_model_local"
 
       - name: Build Docker image
         run: |
