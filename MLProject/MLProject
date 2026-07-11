@@ -1,0 +1,7 @@
+name: diabetes-training
+
+entry_points:
+  main:
+    parameters:
+      run_name: {type: str, default: "Random Forest Classifier"}
+    command: "python modelling.py"

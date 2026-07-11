@@ -1,0 +1,84 @@
+name: Train and Push ML Model
+
+on:
+  push:
+    paths:
+      - 'MLProject/**'
+  workflow_dispatch:
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv pip install mlflow==2.19.0 cloudpickle==3.1.2 numpy==2.5.1 pandas==2.3.3 rich==15.0.0 scikit-learn==1.9.0 scipy==1.18.0 imbalanced-learn dagshub matplotlib seaborn
+
+      - name: Run MLflow Project
+        env:
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_USER_TOKEN }}
+        run: |
+          . .venv/bin/activate
+          mlflow run MLProject --env-manager local
+
+      - name: Get MLflow model from artifacts path
+        id: get_model
+        run: |
+          MODEL_PATH=$(find mlruns -type d -path '*/artifacts/tuned_model' | head -n 1)
+          if [ -z "$MODEL_PATH" ]; then
+            MODEL_PATH=$(find mlruns -type d -name 'tuned_model' | head -n 1)
+          fi
+          if [ -z "$MODEL_PATH" ]; then
+            echo "Model not found. Exiting..."
+            exit 1
+          fi
+          echo "MODEL_PATH=$MODEL_PATH" >> $GITHUB_ENV
+          echo "Model path set to: $MODEL_PATH"
+
+      - name: Build Docker image
+        run: |
+          . .venv/bin/activate
+          mlflow models build-docker -m ${{ env.MODEL_PATH }} -n diabetes-model
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Push Docker image
+        run: |
+          docker tag diabetes-model:latest ${{ secrets.DOCKER_USERNAME }}/diabetes-model:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/diabetes-model:latest
+
+      - name: Upload Model Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tuned-model
+          path: ${{ env.MODEL_PATH }}
+
+      - name: Commit and push model artifacts
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add mlruns/
+          git commit -m "Artifacts uploaded and Docker image pushed from workflow run [skip ci]" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
