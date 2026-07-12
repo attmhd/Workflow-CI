@@ -38,7 +38,7 @@ jobs:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_USER_TOKEN }}
         run: |
           . .venv/bin/activate
-          python MLProject/modelling.py
+          mlflow run MLProject --env-manager=local
 
       - name: Set MLflow model path
         id: get_model
