@@ -14,7 +14,7 @@ flavors:
     sklearn_version: 1.9.0
 mlflow_version: 2.19.0
 model_size_bytes: 835610
-model_uuid: efa62348476d4857bf996a917183bf70
+model_uuid: c87a903ce87f43e7b996f7a347d84e92
 saved_input_example_info:
   artifact_path: input_example.json
   pandas_orient: split
@@ -29,4 +29,4 @@ signature:
     "required": true}, {"type": "long", "name": "BMI_Category", "required": true}]'
   outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
   params: null
-utc_time_created: '2026-07-11 18:22:57.747866'
+utc_time_created: '2026-07-12 08:47:09.056824'
