@@ -36,6 +36,9 @@ jobs:
       - name: Run modelling script
         env:
           DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_USER_TOKEN }}
+          MLFLOW_TRACKING_URI: https://dagshub.com/attmhd/membangun-sistem-ml.mlflow
+          MLFLOW_TRACKING_USERNAME: attmhd
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_USER_TOKEN }}
         run: |
           . .venv/bin/activate
           mlflow run MLProject --env-manager=local
